@@ -1,6 +1,7 @@
-# окно редактирование данных
+# gui/windows/edit_window.py
 import tkinter as tk
 from tkinter import ttk, messagebox
+from typing import Dict, Any
 
 # Импорты из проекта
 from core.database import find_client
@@ -14,26 +15,26 @@ def open_edit_window(parent):
     """
     window = tk.Toplevel(parent)
     window.title("✏️ Редактирование данных")
-    window.geometry(f"{WINDOW_WIDTH}x500")
+    window.geometry(f"{WINDOW_WIDTH}x600")
     window.resizable(False, False)
     window.transient(parent)
     window.grab_set()
 
     # Поля формы (соответствуют базе)
     fields_config = [
-        ("Фамилия", "surname"),
-        ("Имя", "name"),
-        ("Отчество", "patronymic"),
-        ("Марка авто", "car_model"),
-        ("VIN", "vin"),
-        ("Индекс", "index"),
-        ("Адрес", "address"),
-        ("Паспорт (серия и номер)", "passport"),
-        ("Кем выдан", "issued_by"),
-        ("Дата выдачи", "issue_date"),
-        ("Код подразделения", "dep_code"),
-        ("Телефон", "phone"),
-        ("Дата рождения", "birth_date"),
+        ("Фамилия", "Фамилия"),
+        ("Имя", "Имя"),
+        ("Отчество", "Отчество"),
+        ("Марка авто", "Марка авто"),
+        ("VIN", "VIN"),
+        ("Индекс", "Индекс"),
+        ("Адрес", "Адрес"),
+        ("Паспорт (серия и номер)", "Паспорт (серия и номер)"),
+        ("Кем выдан", "Кем выдан"),
+        ("Дата выдачи", "Дата выдачи"),
+        ("Код подразделения", "Код подразделения"),
+        ("Телефон", "Телефон"),
+        ("Дата рождения", "Дата рождения"),
     ]
 
     # --- 1. Поле поиска ---
@@ -46,8 +47,8 @@ def open_edit_window(parent):
     search_entry.focus()
 
     entries = {}
-    client_row_num = None  # Номер строки в Excel
-    original_data = {}     # Оригинальные данные
+    client_row_num = None
+    original_data = {}
 
     def load_client():
         nonlocal client_row_num, original_data
@@ -66,22 +67,9 @@ def open_edit_window(parent):
         original_data = client_data.to_dict()
 
         # Заполнение полей
-        for (_, key), entry in zip(fields_config, entries.values()):
-            value = original_data.get({
-                "surname": "Фамилия",
-                "name": "Имя",
-                "patronymic": "Отчество",
-                "car_model": "Марка авто",
-                "vin": "VIN",
-                "index": "Индекс",
-                "address": "Адрес",
-                "passport": "Паспорт (серия и номер)",
-                "issued_by": "Кем выдан",
-                "issue_date": "Дата выдачи",
-                "dep_code": "Код подразделения",
-                "phone": "Телефон",
-                "birth_date": "Дата рождения"
-            }[key], "")
+        for label_text, field_name in fields_config:
+            entry = entries[field_name]  # Используем имя поля как ключ
+            value = original_data.get(field_name, "")
             entry.delete(0, tk.END)
             entry.insert(0, str(value))
 
@@ -94,38 +82,8 @@ def open_edit_window(parent):
 
         # Сбор новых данных
         new_data = {}
-        field_names = {
-            "surname": "Фамилия",
-            "name": "Имя",
-            "patronymic": "Отчество",
-            "car_model": "Марка авто",
-            "vin": "VIN",
-            "index": "Индекс",
-            "address": "Адрес",
-            "passport": "Паспорт (серия и номер)",
-            "issued_by": "Кем выдан",
-            "issue_date": "Дата выдачи",
-            "dep_code": "Код подразделения",
-            "phone": "Телефон",
-            "birth_date": "Дата рождения"
-        }
-
-        for key, entry in entries.items():
-            new_data[field_names[key]] = entry.get().strip()
-
-        # Валидация телефона и дат (опционально)
-        from core.validators import validate_phone, validate_date
-        if not validate_phone(new_data["Телефон"]):
-            if messagebox.askyesno("Подтвердить", "Некорректный формат телефона. Всё равно сохранить?"):
-                pass
-            else:
-                return
-
-        if not validate_date(new_data["Дата выдачи"]):
-            if messagebox.askyesno("Подтвердить", "Некорректная дата выдачи паспорта. Всё равно сохранить?"):
-                pass
-            else:
-                return
+        for label_text, field_name in fields_config:
+            new_data[field_name] = entries[field_name].get().strip()
 
         # Генерация имени папки
         folder_name = f"{new_data['Фамилия']}_{new_data['Марка авто']}_vin {new_data['VIN']}_{new_data['Индекс']}"
@@ -180,13 +138,13 @@ def open_edit_window(parent):
     form_frame = ttk.Frame(window)
     form_frame.pack(pady=10, padx=20, fill="both", expand=True)
 
-    for i, (label_text, key) in enumerate(fields_config):
+    for i, (label_text, field_name) in enumerate(fields_config):
         ttk.Label(form_frame, text=label_text + ":").grid(
             row=i, column=0, sticky="e", padx=(5, 5), pady=5
         )
         entry = ttk.Entry(form_frame, width=ENTRY_WIDTH)
         entry.grid(row=i, column=1, padx=(0, 10), pady=5, sticky="ew")
-        entries[key] = entry
+        entries[field_name] = entry
 
     # Кнопка поиска
     ttk.Button(window, text="🔍 Найти клиента", command=load_client).pack(pady=5)
