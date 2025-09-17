@@ -3,7 +3,7 @@ import logging
 import pandas as pd
 from openpyxl import load_workbook
 from typing import Optional, Dict, Any
-from pathlib import Path
+
 
 # Импортируем пути
 from config.paths import CLIENTS_DB_PATH, CONTRACTS_DB_PATH
@@ -21,7 +21,7 @@ def get_next_client_id(sheet_name="Folder") -> int:
 
 def find_client(search_term: str) -> Optional[pd.Series]:
     """
-    Ищет клиента по VIN, ФИО или телефону
+    Ищет клиента по VIN, ФИО
     Возвращает строку DataFrame или None
     """
     try:
@@ -93,3 +93,18 @@ def save_contract_record(contract_data: Dict[str, Any]) -> bool:
     except Exception as e:
         logging.error(f"Ошибка сохранения договора: {e}")
         return False
+
+
+def get_next_registry_id() -> int:
+    """
+    Возвращает следующий порядковый номер для реестра договоров
+    """
+    try:
+        df = pd.read_excel(CONTRACTS_DB_PATH, sheet_name="Registry")
+        if df.empty:
+            return 1
+        last_id = df["Номер"].max()
+        return int(last_id) + 1
+    except Exception as e:
+        logging.warning(f"⚠️ Не удалось прочитать Номер из реестра: {e}")
+        return 1

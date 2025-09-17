@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 # Импорты из проекта
-from core.database import find_client, save_contract_record
+from core.database import find_client, save_contract_record, get_next_registry_id
 from core.document_generator import generate_contract
 from config.settings import WINDOW_WIDTH, ENTRY_WIDTH
 
@@ -24,7 +24,7 @@ def open_contract_window(parent):
     window.columnconfigure(1, weight=1)
 
     # Поле ввода
-    ttk.Label(window, text="Введите ФИМ, VIN или телефон:").grid(
+    ttk.Label(window, text="Введите VIN или ФИО:").grid(
         row=0, column=0, padx=(10, 5), pady=30, sticky="e"
     )
     search_entry = ttk.Entry(window, width=ENTRY_WIDTH)
@@ -40,7 +40,7 @@ def open_contract_window(parent):
         # Поиск клиента
         client_data = find_client(search_term)
         if client_data is None:
-            messagebox.showerror("Ошибка", "Клиент не найден. Проверьте ФИО, VIN или телефон.")
+            messagebox.showerror("Ошибка", "Клиент не найден. Проверьте ФИО или VIN.")
             return
 
         # Подтверждение
@@ -55,7 +55,7 @@ def open_contract_window(parent):
             from core.database import get_next_contract_number
 
             contract_data = {
-                "Номер": int(client_data["№"]),
+                "Номер": get_next_registry_id(),
                 "ФИО": full_name,
                 "Номер договора": get_next_contract_number(),
                 "Телефон": client_data["Телефон"],
