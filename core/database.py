@@ -1,4 +1,5 @@
 # core/database.py
+import logging
 import pandas as pd
 from openpyxl import load_workbook
 from typing import Optional, Dict, Any
@@ -31,8 +32,7 @@ def find_client(search_term: str) -> Optional[pd.Series]:
             df["VIN"].astype(str).str.contains(search_term, case=False, na=False) |
             df["Фамилия"].str.contains(search_term, case=False, na=False) |
             df["Имя"].str.contains(search_term, case=False, na=False) |
-            df["Отчество"].str.contains(search_term, case=False, na=False) |
-            df["Телефон"].astype(str).str.contains(search_term.replace("-", "").replace(" ", ""), na=False)
+            df["Отчество"].str.contains(search_term, case=False, na=False)
         )
         if mask.any():
             return df[mask].iloc[0]
