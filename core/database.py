@@ -4,7 +4,6 @@ import pandas as pd
 from openpyxl import load_workbook
 from typing import Optional, Dict, Any
 
-
 # Импортируем пути
 from config.paths import CLIENTS_DB_PATH, CONTRACTS_DB_PATH
 
@@ -150,12 +149,6 @@ def get_client_data_for_contract(search_term: str) -> list:
         client["Кем выдан"],                  # 7. Кем выдан
         client["Дата выдачи"],                # 8. Дата выдачи паспорта
         client["Код подразделения"],          # 9. Код подразделения
-        phone,                                # 10. Телефон (в строке e-mail)
+        client["Телефон"],                    # 10. Телефон (в строке e-mail)
         short_fio                             # 11. Подпись: _________ / & М.П.
     ]
-
-
-# search_term = "WBAJP31010CD00662"
-# # print(find_client(search_term))
-# print(get_client_data_for_contract(search_term))
-#
