@@ -194,3 +194,38 @@ def format_phone(phone: str) -> tuple[str, str]:
     """Дублируем из utils, если нужно (или импортировать)"""
     from core.utils import format_phone as util_format
     return util_format(phone)
+
+
+# core/document_generator.py
+
+def replace_stars_with_fff(input_file: Path, output_file: Path, data_list: list) -> bool:
+    """
+    Заменяет каждый & в документе на значение из data_list по порядку
+    """
+    try:
+        from docx import Document
+        doc = Document(input_file)
+
+        # Обработка обычных параграфов
+        for paragraph in doc.paragraphs:
+            for run in paragraph.runs:
+                while '&' in run.text and data_list:
+                    run.text = run.text.replace('&', str(data_list.pop(0)), 1)
+
+        # Обработка таблиц
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for paragraph in cell.paragraphs:
+                        for run in paragraph.runs:
+                            while '&' in run.text and data_list:
+                                run.text = run.text.replace('&', str(data_list.pop(0)), 1)
+
+        doc.save(output_file)
+        logging.info(f"Договор сохранён: {output_file}")
+        return True
+
+    except Exception as e:
+        logging.error(f"Ошибка генерации договора: {e}")
+        return False
+
