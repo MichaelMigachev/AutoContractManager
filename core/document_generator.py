@@ -1,4 +1,6 @@
 # core/document_generator.py
+from openpyxl import load_workbook
+
 from docx import Document
 from pathlib import Path
 import logging
@@ -12,7 +14,7 @@ from config.settings import (
     DEFAULT_CURRENCY,
     CURRENCY_SYMBOL
 )
-from core.utils import sanitize_filename, get_current_date
+from core.utils import sanitize_filename, get_current_date, number_to_words
 
 
 def replace_placeholders_in_paragraph(paragraph, data: Dict[str, Any]):
@@ -118,79 +120,69 @@ def generate_contract(client_data: Dict[str, Any]) -> bool:
     return success
 
 
-def generate_invoice(
-    client_data: Dict[str, Any],
-    contract_num: str,
-    service_type: str,
-    amount: int,
-    payment_method: str = "account"  # 'account' или 'card'
-) -> bool:
-    """
-    Выставляет счёт
-
-    :param client_data: данные клиента
-    :param contract_num: номер договора
-    :param service_type: услуга ("sbkts" или "scrap")
-    :param amount: сумма в рублях
-    :param payment_method: способ оплаты
-    :return: True при успехе
-    """
-    from core.utils import number_to_words
-
-    full_name = f"{client_data['Фамилия']} {client_data['Имя']} {client_data['Отчество']}"
-    thousands = amount // 1000
-    amount_text = number_to_words(thousands).capitalize() + " тысяч"
-
-    service_desc = {
-        "sbkts": "выпуску СБКТС + ЭПТС",
-        "scrap": "списанию утильсбора"
-    }.get(service_type, "услуге")
-
-    # Выбор шаблона
-    if payment_method == "card":
-        template_path = INVOICE_CARD_TEMPLATE
-        method_label = " НА КАРТУ "
-    else:
-        template_path = INVOICE_TEMPLATE
-        method_label = ""
-
-    context = {
-        "NUM": contract_num.replace("-ИП", ""),
-        "FULL_NUM": f"{contract_num}-001",
-        "DATE": get_current_date(),
-        "VERBOSE_DATE": get_current_date("%d %B %Y").replace(' ', ' ').replace('0', 'о'),  # можно улучшить
-        "FIO": full_name,
-        "ADDRESS": client_data['Адрес'],
-        "AMOUNT": str(amount),
-        "AMOUNT_RUB": f"{amount} {CURRENCY_SYMBOL}",
-        "AMOUNT_TEXT": amount_text,
-        "SERVICE": service_desc,
-        "CAR_INFO": f"{client_data['Марка авто']}_vin {client_data['VIN']}",
-        "INDEX": client_data['Индекс'],
-        "CONTRACT_REF": f"{contract_num} от {client_data.get('Дата создания папки', '__.__.____')}",
-        "METHOD_LABEL": method_label.strip(),
-        "COMPANY": COMPANY_NAME,
-        "INN": "123456789012",
-        "BANK_ACCOUNT": "40817810123456789012",
-        "BANK_NAME": "Сбербанк",
-        "BANK_BIC": "044525225",
-        "CORR_ACCOUNT": "30101810400000000225"
-    }
-
-    # Имя файла
-    safe_fio = sanitize_filename(full_name)
-    filename = f"Счёт{method_label}№ {context['FULL_NUM']} от {context['DATE']} для {safe_fio}_{context['INDEX']}.docx"
-    filename = sanitize_filename(filename)
-    output_path = OUTPUT_DIR / filename
-
-    # Генерация
-    success = fill_template(template_path, output_path, context)
-    return success
-
-
 # --- Удобные функции ---
 
 def format_phone(phone: str) -> tuple[str, str]:
     """Дублируем из utils, если нужно (или импортировать)"""
     from core.utils import format_phone as util_format
     return util_format(phone)
+
+
+def generate_invoice(
+    client_data: dict,
+    contract_num: str,
+    service_type: str,
+    amount: int,
+    payment_method: str = "card"
+) -> bool:
+    """
+    Заполняет шаблон счёта с использованием {ключей}
+    """
+    # Выбор шаблона
+    if payment_method == "card":
+        template_path = INVOICE_CARD_TEMPLATE
+    else:
+        template_path = INVOICE_TEMPLATE
+
+    output_filename = f"Счёт{' НА КАРТУ ' if payment_method == 'card' else ' '}№ {contract_num}-001 от {get_current_date()} для {client_data['Фамилия']}_{client_data['Имя']}.docx"
+    output_path = OUTPUT_DIR / sanitize_filename(output_filename)
+
+    try:
+        if not template_path.exists():
+            logging.error(f"Шаблон не найден: {template_path}")
+            return False
+
+        doc = Document(template_path)
+
+        # Определяем услугу
+        service_desc = "выпуску СБКТС + ЭПТС" if service_type == "sbkts" else "списанию утильсбора"
+
+        # Формируем контекст
+        context = {
+            "NUM": contract_num[:3],
+            "DATE": get_current_date(),
+            "FIO": f"{client_data['Фамилия']} {client_data['Имя']} {client_data['Отчество']}",
+            "ADDRESS": client_data["Адрес"],
+            "SERVICE": service_desc,
+            "CAR": f"{client_data['Марка авто']}_vin {client_data['VIN']}",
+            "AMOUNT": f"{amount:.2f}".replace('.00', ''),  # Без .00
+            "AMOUNT_RUB": f"{amount} руб.",
+            "AMOUNT_TEXT": number_to_words(amount // 1000).capitalize() + " тысяч",
+            "CONTRACT_REF": contract_num
+        }
+
+        # --- Замена в параграфах ---
+        for paragraph in doc.paragraphs:
+            replace_placeholders_in_paragraph(paragraph, context)
+
+        # --- Замена в таблицах ---
+        for table in doc.tables:
+            replace_placeholders_in_table(table, context)
+
+        doc.save(output_path)
+        logging.info(f"✅ Счёт создан: {output_path}")
+        return True
+
+    except Exception as e:
+        logging.error(f"🔴 Ошибка генерации счёта: {e}")
+        return False

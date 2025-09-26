@@ -3,7 +3,6 @@ import logging
 import pandas as pd
 from openpyxl import load_workbook
 from typing import Optional, Dict, Any
-from pathlib import Path
 
 # Импортируем пути
 from config.paths import CLIENTS_DB_PATH, CONTRACTS_DB_PATH
@@ -21,7 +20,7 @@ def get_next_client_id(sheet_name="Folder") -> int:
 
 def find_client(search_term: str) -> Optional[pd.Series]:
     """
-    Ищет клиента по VIN, ФИО или телефону
+    Ищет клиента по VIN, ФИО
     Возвращает строку DataFrame или None
     """
     try:
@@ -56,20 +55,30 @@ def save_client(data: Dict[str, Any]) -> bool:
 
 
 def get_next_contract_number() -> str:
-    """Генерирует следующий номер договора: 101-ИП, 102-ИП и т.д."""
+    """
+    Генерирует следующий номер договора: 101-ИП, 102-ИП и т.д.
+    Основывается на максимальном номере в столбце 'Номер договора'
+    """
     try:
         df = pd.read_excel(CONTRACTS_DB_PATH, sheet_name="Registry")
-        last_num = 0
-        for num_str in df["Номер договора"]:
+        if df.empty:
+            return "101-ИП"
+
+        # Извлекаем числовую часть из 'Номер договора' (например, из '101-ИП' → 101)
+        numbers = []
+        for num_str in df["Номер договора"].dropna():  # Исключаем NaN
             if isinstance(num_str, str) and "-ИП" in num_str:
                 try:
-                    n = int(num_str.replace("-ИП", ""))
-                    last_num = max(last_num, n)
-                except:
-                    continue
+                    n = int(num_str.replace("-ИП", "").strip())
+                    numbers.append(n)
+                except ValueError:
+                    continue  # Пропускаем некорректные значения
+
+        last_num = max(numbers) if numbers else 100
         return f"{last_num + 1}-ИП"
+
     except Exception as e:
-        print(f"Ошибка получения номера договора: {e}")
+        logging.warning(f"⚠️ Ошибка при получении номера договора: {e}")
         return "101-ИП"
 
 
@@ -93,3 +102,53 @@ def save_contract_record(contract_data: Dict[str, Any]) -> bool:
     except Exception as e:
         logging.error(f"Ошибка сохранения договора: {e}")
         return False
+
+
+def get_next_registry_id() -> int:
+    """
+    Возвращает следующий порядковый номер для реестра договоров
+    """
+    try:
+        df = pd.read_excel(CONTRACTS_DB_PATH, sheet_name="Registry")
+        if df.empty:
+            return 1
+        last_id = df["Номер"].max()
+        return int(last_id) + 1
+    except Exception as e:
+        logging.warning(f"⚠️ Не удалось прочитать Номер из реестра: {e}")
+        return 1
+
+
+# core/database.py
+
+def get_client_data_for_contract(search_term: str) -> list:
+    """
+    Возвращает список данных клиента в порядке, соответствующем расположению & в шаблоне.
+    Используется для совместимости с шаблонами, где плейсхолдер — символ &
+    """
+    client = find_client(search_term)
+    if client is None:
+        logging.warning(f"Клиент не найден по запросу: {search_term}")
+        return []
+
+    # Форматируем телефон
+    # phone, index_part = format_phone(client["Телефон"])
+
+    # Формируем ФИО и инициалы
+    full_fio = f"{client['Фамилия']} {client['Имя']} {client['Отчество']}"
+    short_fio = f"{client['Фамилия']} {client['Имя'][0]}. {client['Отчество'][0]}."
+
+    # Возвращаем список в порядке появления & в contract_template.docx
+    return [
+        get_next_contract_number(),           # 1. № договора (например, 103-ИП)
+        get_current_date(),                   # 2. Дата договора
+        full_fio,                             # 3. Полное ФИО после "и"
+        full_fio,                             # 4. ФИО в реквизитах (Заказчик: &)
+        client["Адрес"],                      # 5. Адрес после "РОССИЯ, "
+        client["Паспорт (серия и номер)"],    # 6. Паспорт (серия и номер)
+        client["Кем выдан"],                  # 7. Кем выдан
+        client["Дата выдачи"],                # 8. Дата выдачи паспорта
+        client["Код подразделения"],          # 9. Код подразделения
+        client["Телефон"],                    # 10. Телефон (в строке e-mail)
+        short_fio                             # 11. Подпись: _________ / & М.П.
+    ]

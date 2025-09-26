@@ -26,7 +26,7 @@ def open_invoice_window(parent):
     row_idx = 0
 
     # --- 1. Поиск клиента ---
-    ttk.Label(window, text="Номер договора или ФИО/VIN:").grid(
+    ttk.Label(window, text="Номер договора:").grid(
         row=row_idx, column=0, padx=(10, 5), pady=15, sticky="e"
     )
     search_entry = ttk.Entry(window, width=ENTRY_WIDTH)
