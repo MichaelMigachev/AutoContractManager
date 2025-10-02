@@ -144,7 +144,7 @@ def generate_invoice(
     else:
         template_path = INVOICE_TEMPLATE
 
-    output_filename = f"Счёт{' НА КАРТУ ' if payment_method == 'card' else ' '}№ {contract_num}-001 от {get_current_date()} для {client_data['Фамилия']}_{client_data['Имя']}.docx"
+    output_filename = f"Подписанный счёт{' НА КАРТУ ' if payment_method == 'card' else ' '}№ {contract_num}-001 от {get_current_date()} для {client_data['Фамилия']} {client_data['Имя']} {client_data['Отчество']}.docx"
     output_path = OUTPUT_DIR / sanitize_filename(output_filename)
 
     try:
@@ -162,7 +162,7 @@ def generate_invoice(
             "NUM": contract_num[:3],
             "DATE": get_current_date(),
             "FIO": f"{client_data['Фамилия']} {client_data['Имя']} {client_data['Отчество']}",
-            "ADDRESS": client_data["Адрес"],
+            "ADDRESS": client_data['Адрес'],
             "SERVICE": service_desc,
             "CAR": f"{client_data['Марка авто']}_vin {client_data['VIN']}",
             "AMOUNT": f"{amount:.2f}".replace('.00', ''),  # Без .00
