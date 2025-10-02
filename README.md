@@ -27,39 +27,40 @@
 ---
 
 ## 🗂️ Структура проекта
-
+```
 AutoContractManager/
 │
-├── main.py # Точка входа — запуск GUI
-├── pyproject.toml # Зависимости
-├── README.md # Документация
+├── main.py                        # Точка входа — запуск GUI
+├── pyproject.toml                 # Зависимости
+├── README.md                      # Документация
 │
 ├── config/
-│ ├── paths.py # Пути к файлам
-│ └── settings.py # Настройки приложения
+│ ├── paths.py                     # Пути к файлам
+│ └── settings.py                  # Настройки приложения
 │
 ├── core/
-│ ├── database.py # Работа с Excel: поиск, сохранение
-│ ├── document_generator.py # Генерация .docx из шаблонов
-│ ├── validators.py # Валидация: VIN, телефон, дата
-│ └── utils.py # Вспомогательные функции
+│ ├── database.py                  # Работа с Excel: поиск, сохранение
+│ ├── document_generator.py        # Генерация .docx из шаблонов
+│ ├── validators.py                # Валидация: VIN, телефон, дата
+│ └── utils.py                     # Вспомогательные функции
 │
 ├── gui/
-│ └── windows/ # GUI-окна
-│ ├── data_entry_window.py # Ввод данных
-│ ├── contract_window.py # Оформление договора
-│ ├── invoice_window.py # Выставление счёта
-│ └── edit_window.py # Редактирование
+│ └── windows/                     # GUI-окна
+│ ├── data_entry_window.py         # Ввод данных
+│ ├── contract_window.py           # Оформление договора
+│ ├── invoice_window.py            # Выставление счёта
+│ └── edit_window.py               # Редактирование
 │
 ├── data/
-│ ├── database_of_contracts.xlsx # База клиентов
-│ └── contracts_registry.xlsx # Реестр договоров
+│ ├── database_of_contracts.xlsx   # База клиентов
+│ └── contracts_registry.xlsx      # Реестр договоров
 │
 ├── templates/
-│ ├── contract_template.docx # Шаблон договора
-│ ├── invoice_template.docx # Счёт на счёт
-│ └── invoice_card_template.docx # Счёт на карту
+│ ├── contract_template.docx       # Шаблон договора
+│ ├── invoice_template.docx        # Счёт на счёт
+│ └── invoice_card_template.docx   # Счёт на карту
 │
-├── documents_ready/ # Готовые документы (авто)
+├── documents_ready/               # Готовые документы (авто)
 └── logs/
-└── app.log # Логи приложения
+└── app.log                        # Логи приложения
+```
