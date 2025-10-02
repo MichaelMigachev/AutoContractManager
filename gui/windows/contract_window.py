@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 # Импорты из проекта
-from core.database import find_client, save_contract_record, get_next_registry_id
+from core.database import find_client, save_contract_record, get_next_registry_id, is_contract_exists_for_fio
 from core.document_generator import generate_contract
 from config.settings import WINDOW_WIDTH, ENTRY_WIDTH
 
@@ -43,6 +43,18 @@ def open_contract_window(parent):
             messagebox.showerror("Ошибка", "Клиент не найден. Проверьте ФИО или VIN.")
             return
 
+        # Формируем полное ФИО
+        full_name = f"{client_data['Фамилия']} {client_data['Имя']} {client_data['Отчество']}"
+
+        # 🔍 Проверка на существующий договор
+        if is_contract_exists_for_fio(full_name):
+            answer = messagebox.askyesno(
+                "Дубликат договора",
+                f"Договор для клиента:\n{full_name}\nуже существует.\n\n"
+                "Вы уверены, что хотите создать ещё один?"
+            )
+            if not answer:
+                return  # Отмена операции
         # Подтверждение
         full_name = f"{client_data['Фамилия']} {client_data['Имя']} {client_data['Отчество']}"
         if not messagebox.askyesno("Подтверждение", f"Оформить договор для:\n{full_name}?"):

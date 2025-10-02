@@ -152,3 +152,21 @@ def get_client_data_for_contract(search_term: str) -> list:
         client["Телефон"],                    # 10. Телефон (в строке e-mail)
         short_fio                             # 11. Подпись: _________ / & М.П.
     ]
+
+
+def is_contract_exists_for_fio(full_name: str) -> bool:
+    """
+    Проверяет, существует ли уже договор для указанного ФИО
+    :param full_name: Полное ФИО клиента (например, "Иванов Иван Иванович")
+    :return: True, если договор уже есть
+    """
+    try:
+        df = pd.read_excel(CONTRACTS_DB_PATH, sheet_name="Registry")
+        # Приводим к строке и удаляем лишние пробелы
+        df["ФИО"] = df["ФИО"].astype(str).str.strip()
+
+        # Ищем точное совпадение ФИО
+        return (df["ФИО"] == full_name.strip()).any()
+    except Exception as e:
+        logging.warning(f"⚠️ Не удалось проверить дубликат договора: {e}")
+        return False  # На всякий случай разрешаем, если ошибка
