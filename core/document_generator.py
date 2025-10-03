@@ -11,10 +11,8 @@ from config.paths import OUTPUT_DIR, CONTRACT_TEMPLATE, INVOICE_TEMPLATE, INVOIC
 from config.settings import (
     APP_NAME,
     COMPANY_NAME,
-    DEFAULT_CURRENCY,
-    CURRENCY_SYMBOL
 )
-from core.utils import sanitize_filename, get_current_date, number_to_words
+from core.utils import sanitize_filename, get_current_date, number_to_words, get_date_verbose
 
 
 def replace_placeholders_in_paragraph(paragraph, data: Dict[str, Any]):
@@ -144,7 +142,9 @@ def generate_invoice(
     else:
         template_path = INVOICE_TEMPLATE
 
-    output_filename = f"Подписанный счёт{' НА КАРТУ ' if payment_method == 'card' else ' '}№ {contract_num}-001 от {get_current_date()} для {client_data['Фамилия']} {client_data['Имя']} {client_data['Отчество']}.docx"
+    output_filename = (f"Подписанный счет{' НА КАРТУ ' if payment_method == 'card' else ' '}№ {contract_num[:3]}-001 от"
+                       f" {get_current_date()} для {client_data['Фамилия']} {client_data['Имя']} "
+                       f"{client_data['Отчество']}_{client_data['Индекс']}.docx")
     output_path = OUTPUT_DIR / sanitize_filename(output_filename)
 
     try:
@@ -158,9 +158,14 @@ def generate_invoice(
         service_desc = "выпуску СБКТС + ЭПТС" if service_type == "sbkts" else "списанию утильсбора"
 
         # Формируем контекст
+        current_date = get_current_date()  # "03.10.2025"
+        verbose_date = get_date_verbose(current_date)  # "3 октября 2025 г."
+
+        # Формируем контекст
         context = {
             "NUM": contract_num[:3],
             "DATE": get_current_date(),
+            "VERBOSE_DATE": verbose_date,
             "FIO": f"{client_data['Фамилия']} {client_data['Имя']} {client_data['Отчество']}",
             "ADDRESS": client_data['Адрес'],
             "SERVICE": service_desc,

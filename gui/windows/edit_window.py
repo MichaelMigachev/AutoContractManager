@@ -154,7 +154,7 @@ def open_edit_window(parent):
     button_frame.pack(pady=15)
 
     ttk.Button(button_frame, text="Отмена", command=window.destroy).pack(side="left", padx=5)
-    save_btn = ttk.Button(button_frame, text="Сохранить изменения", command=save_changes, state="disabled")
+    save_btn = ttk.Button(button_frame, text="✅ Сохранить изменения", command=save_changes, state="disabled")
     save_btn.pack(side="left", padx=5)
 
     # Обработка Enter
