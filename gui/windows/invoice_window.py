@@ -59,13 +59,14 @@ def open_invoice_window(parent):
     ttk.Label(window, text="Способ оплаты:").grid(
         row=row_idx, column=0, padx=(10, 5), pady=10, sticky="e"
     )
-    payment_var = tk.StringVar(value="account")
-    ttk.Radiobutton(window, text="На расчётный счёт", variable=payment_var, value="account").grid(
-        row=row_idx, column=1, sticky="w", padx=(0, 10))
-    row_idx += 1
+    payment_var = tk.StringVar(value="card")
     ttk.Radiobutton(window, text="На карту", variable=payment_var, value="card").grid(
         row=row_idx, column=1, sticky="w", padx=(0, 10))
     row_idx += 1
+    ttk.Radiobutton(window, text="На расчётный счёт", variable=payment_var, value="account").grid(
+        row=row_idx, column=1, sticky="w", padx=(0, 10))
+    row_idx += 1
+
 
     def issue_invoice():
         search_term = search_entry.get().strip()
