@@ -160,6 +160,7 @@ def generate_invoice(
         # Формируем контекст
         current_date = get_current_date()  # "03.10.2025"
         verbose_date = get_date_verbose(current_date)  # "3 октября 2025 г."
+        number_to_word = number_to_words(amount // 1000).capitalize()
 
         # Формируем контекст
         context = {
@@ -172,7 +173,7 @@ def generate_invoice(
             "CAR": f"{client_data['Марка авто']}_vin {client_data['VIN']}",
             "AMOUNT": f"{amount:.2f}".replace('.00', ''),  # Без .00
             "AMOUNT_RUB": f"{amount} руб.",
-            "AMOUNT_TEXT": number_to_words(amount // 1000).capitalize() + " тысяч",
+            "AMOUNT_TEXT": f"{number_to_word}{' тысячи' if number_to_word[-1] in ['и', 'е'] else ' тысяч'}",
             "CONTRACT_REF": contract_num
         }
 
