@@ -110,7 +110,7 @@ def generate_contract(client_data: Dict[str, Any]) -> bool:
     # Имя файла
     safe_fio = sanitize_filename(full_name)
     safe_index = client_data['Индекс'] if '*' not in client_data['Индекс'] else "ИНДЕКС"
-    filename = f"Договор №{contract_num} ({safe_fio})_{safe_index}.docx"
+    filename = f"Договор № {contract_num} ({safe_fio})_{safe_index}.docx"
     output_path = OUTPUT_DIR / filename
 
     # Генерация
