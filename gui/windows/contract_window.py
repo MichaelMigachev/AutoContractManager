@@ -76,7 +76,10 @@ def open_contract_window(parent):
             }
             save_contract_record(contract_data)
 
-            messagebox.showinfo("Успех", "Договор успешно создан и сохранён!")
+            messagebox.showinfo("Успех", f"Договор успешно создан и сохранён! \n\n"
+                                         f"Номер договора: {contract_data['Номер договора']}\n"
+                                         f"Клиент: {full_name}\n"
+                                         f"Дата: {contract_data['Дата']}")
             window.destroy()
         else:
             messagebox.showerror("Ошибка", "Не удалось создать договор.\nПроверьте шаблон 'contract_template.docx'.")
