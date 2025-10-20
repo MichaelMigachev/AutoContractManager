@@ -6,6 +6,7 @@ from tkinter import ttk, messagebox
 from core.database import find_client, save_contract_record, get_next_registry_id, is_contract_exists_for_fio
 from core.document_generator import generate_contract
 from config.settings import WINDOW_WIDTH, ENTRY_WIDTH
+from core.utils import get_current_date
 
 
 def open_contract_window(parent):
@@ -79,7 +80,7 @@ def open_contract_window(parent):
             messagebox.showinfo("Успех", f"Договор успешно создан и сохранён! \n\n"
                                          f"Номер договора: {contract_data['Номер договора']}\n"
                                          f"Клиент: {full_name}\n"
-                                         f"Дата: {contract_data['Дата']}")
+                                         f"Дата: {get_current_date()}")
             window.destroy()
         else:
             messagebox.showerror("Ошибка", "Не удалось создать договор.\nПроверьте шаблон 'contract_template.docx'.")

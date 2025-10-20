@@ -13,6 +13,7 @@ from config.settings import (
     COMPANY_NAME,
 )
 from core.utils import sanitize_filename, get_current_date, number_to_words, get_date_verbose
+from core.database import get_contract_creation_date
 
 
 def replace_placeholders_in_paragraph(paragraph, data: Dict[str, Any]):
@@ -157,6 +158,13 @@ def generate_invoice(
         # Определяем услугу
         service_desc = "выпуску СБКТС + ЭПТС" if service_type == "sbkts" else "списанию утильсбора"
 
+        # Получаем дату создания договора из реестра
+        contract_date = get_contract_creation_date(contract_num)
+
+        # Если дата не найдена — используем сегодняшнюю как fallback
+        if not contract_date:
+            contract_date = get_current_date()
+
         # Формируем контекст
         current_date = get_current_date()  # "03.10.2025"
         verbose_date = get_date_verbose(current_date)  # "3 октября 2025 г."
@@ -174,7 +182,7 @@ def generate_invoice(
             "AMOUNT": f"{amount:.2f}".replace('.00', ''),  # Без .00
             "AMOUNT_RUB": f"{amount} руб.",
             "AMOUNT_TEXT": f"{number_to_word}{' тысячи' if number_to_word[-1] in ['и', 'е'] else ' тысяч'}",
-            "CONTRACT_REF": contract_num
+            "CONTRACT_REF": f"{contract_num} от {contract_date}",
         }
 
         # --- Замена в параграфах ---

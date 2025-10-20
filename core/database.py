@@ -170,3 +170,28 @@ def is_contract_exists_for_fio(full_name: str) -> bool:
     except Exception as e:
         logging.warning(f"⚠️ Не удалось проверить дубликат договора: {e}")
         return False  # На всякий случай разрешаем, если ошибка
+
+
+def get_contract_creation_date(contract_num: str) -> str:
+    """
+    Находит дату создания договора по его номеру (например, '108-ИП') в реестре.
+
+    :param contract_num: Номер договора (с суффиксом -ИП)
+    :return: Дата в формате "ДД.ММ.ГГГГ" или пустая строка, если не найдено
+    """
+    try:
+        # Читаем реестр договоров
+        df = pd.read_excel(CONTRACTS_DB_PATH, sheet_name="Registry")
+
+        # Ищем строку с нужным номером договора
+        mask = df["Номер договора"].astype(str).str.strip() == contract_num.strip()
+        if mask.any():
+            date = df.loc[mask, "Дата"].iloc[0]
+            return str(date).strip()
+        else:
+            logging.warning(f"Договор {contract_num} не найден в реестре.")
+            return ""
+
+    except Exception as e:
+        logging.error(f"Ошибка при поиске даты договора {contract_num}: {e}")
+        return ""
