@@ -13,7 +13,8 @@ from config.settings import (
     COMPANY_NAME,
 )
 from core.utils import sanitize_filename, get_current_date, number_to_words, get_date_verbose
-from core.database import get_contract_creation_date
+from core.database import get_contract_creation_date, get_next_contract_number
+
 
 
 def replace_placeholders_in_paragraph(paragraph, data: Dict[str, Any]):
@@ -76,9 +77,7 @@ def generate_contract(client_data: Dict[str, Any]) -> bool:
     :param client_data: данные клиента из Excel
     :return: True при успехе
     """
-    from core.database import get_next_contract_number
-
-    # Данные для шаблона
+        # Данные для шаблона
     contract_num = get_next_contract_number()
     full_name = f"{client_data['Фамилия']} {client_data['Имя']} {client_data['Отчество']}"
     car_info = f"{client_data['Марка авто']} (VIN {client_data['VIN']})"
@@ -158,17 +157,16 @@ def generate_invoice(
         # Определяем услугу
         service_desc = "выпуску СБКТС + ЭПТС" if service_type == "sbkts" else "списанию утильсбора"
 
-        # Получаем дату создания договора из реестра
-        contract_date = get_contract_creation_date(contract_num)
-
-        # Если дата не найдена — используем сегодняшнюю как fallback
-        if not contract_date:
-            contract_date = get_current_date()
-
         # Формируем контекст
         current_date = get_current_date()  # "03.10.2025"
         verbose_date = get_date_verbose(current_date)  # "3 октября 2025 г."
         number_to_word = number_to_words(amount // 1000).capitalize()
+
+        # Получаем дату создания договора из реестра
+        contract_date = get_contract_creation_date(contract_num)
+        # Если дата не найдена — используем сегодняшнюю как fallback
+        if not contract_date:
+            contract_date = "03.10.2025"
 
         # Формируем контекст
         context = {
