@@ -73,7 +73,7 @@ def open_contract_window(parent):
                 "Номер договора": get_next_contract_number(),
                 "Телефон": client_data["Телефон"],
                 "Индекс": client_data["Индекс"],
-                "Дата": client_data["Дата создания папки"]
+                "Дата": get_current_date()
             }
             save_contract_record(contract_data)
 
