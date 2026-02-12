@@ -1,18 +1,17 @@
-[project]
+[tool.poetry]
 name = "autocontractmanager"
 version = "0.1.0"
 description = ""
-authors = [
-    {name = "Your Name",email = "you@example.com"}
-]
+authors = ["Your Name <you@example.com>"]
 readme = "README.md"
-requires-python = ">=3.11"
-dependencies = [
-    "pandas (>=2.3.2,<3.0.0)",
-    "python-docx (>=1.2.0,<2.0.0)",
-    "openpyxl (>=3.1.5,<4.0.0)"
-]
+package-mode = false
 
+[tool.poetry.dependencies]
+python = ">=3.11"
+pandas = ">=2.3.2,<3.0.0"
+python-docx = ">=1.2.0,<2.0.0"
+openpyxl = ">=3.1.5,<4.0.0"
+setuptools = ">=82.0.0,<83.0.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

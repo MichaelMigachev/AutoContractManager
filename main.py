@@ -3,21 +3,17 @@ import tkinter as tk
 from tkinter import messagebox
 import os
 
-# Пути к корню проекта и добавление в sys.path (чтобы импорты работали)
 import sys
 from pathlib import Path
 
-# Определяем путь к проекту
 PROJECT_ROOT = Path(__file__).parent
 sys.path.append(str(PROJECT_ROOT))
 
-# Импортируем GUI-окна из модулей
 from gui.windows.data_entry_window import open_data_entry_window
 from gui.windows.contract_window import open_contract_window
 from gui.windows.invoice_window import open_invoice_window
 from gui.windows.edit_window import open_edit_window
 
-# Импортируем утилиты
 from core.utils import setup_logging
 from config.paths import OUTPUT_DIR, CLIENTS_DB_PATH, CONTRACTS_DB_PATH
 
